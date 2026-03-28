@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Shield, Lock, Key, FileKey, Eraser, Eye, EyeOff } from 'lucide-react';
+import { Lock, Key, FileKey, Eraser, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -9,10 +9,9 @@ import { deriveKeyFromPassword, generateSalt, saltToHex, hexToSalt } from '../ut
 import { addAuditLog } from '../utils/auditLog';
 import { toast } from 'sonner';
 
-const SALT_KEY = 'aegis_salt';
-const VAULT_INITIALIZED_KEY = 'aegis_initialized';
+const SALT_KEY = 'keynest_salt';
+const VAULT_INITIALIZED_KEY = 'keynest_initialized';
 
-// Password strength checker function
 const checkPasswordStrength = (password: string): { strength: string; score: number; color: string } => {
   if (!password) {
     return { strength: '', score: 0, color: '' };
@@ -20,7 +19,7 @@ const checkPasswordStrength = (password: string): { strength: string; score: num
 
   let score = 0;
   
-  // Length check
+  // Length checks
   if (password.length >= 8) score += 1;
   if (password.length >= 12) score += 1;
   
@@ -30,11 +29,11 @@ const checkPasswordStrength = (password: string): { strength: string; score: num
   if (/[0-9]/.test(password)) score += 1;
   if (/[^a-zA-Z0-9]/.test(password)) score += 1;
   
-  // Additional bonus for longer passwords with variety
+  // Bonus points for strong combinations
   if (password.length >= 12 && /[^a-zA-Z0-9]/.test(password) && /[A-Z]/.test(password)) score += 1;
   if (password.length >= 16) score += 1;
   
-  // Determine strength based on score
+  // Determine strength based on score (max 8)
   let strength = '';
   let color = '';
   
@@ -102,7 +101,7 @@ export function AuthenticationScreen() {
         addAuditLog(
           'Vault Initialized',
           'INFO',
-          'Aegis Vault successfully initialized with new encryption key'
+          'KeyNest successfully initialized with new encryption key'
         );
       } else {
         // Existing vault - retrieve salt
@@ -117,28 +116,27 @@ export function AuthenticationScreen() {
       const key = await deriveKeyFromPassword(password, salt);
       
       // Store the key in sessionStorage (cleared when browser closes)
-      // Note: In production, consider using a more secure method
-      sessionStorage.setItem('aegis_key_available', 'true');
+      sessionStorage.setItem('keynest_key_available', 'true');
       
-      // Store key in memory via a global reference (not ideal but works for this context)
-      (window as any).aegisKey = key;
+      // Store key in memory via a global reference
+      (window as any).keynestKey = key;
 
       addAuditLog(
         'Vault Unlocked',
         'INFO',
-        'Vault successfully unlocked and encryption key derived'
+        'KeyNest successfully unlocked and encryption key derived'
       );
 
-      toast.success('Vault unlocked successfully');
+      toast.success('KeyNest unlocked successfully');
       navigate('/vault');
       
     } catch (error) {
       console.error('Authentication error:', error);
-      toast.error('Failed to unlock vault');
+      toast.error('Failed to unlock KeyNest');
       addAuditLog(
         'Unlock Failed',
         'WARNING',
-        `Failed to unlock vault: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to unlock KeyNest: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     } finally {
       setIsLoading(false);
@@ -149,14 +147,16 @@ export function AuthenticationScreen() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
       <div className="w-full max-w-5xl grid md:grid-cols-2 gap-6">
         {/* Left side - Authentication */}
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
+        <Card className="border-slate-600/20 bg-slate-700/45 backdrop-blur-sm shadow-2xl shadow-black/15">
           <CardHeader className="space-y-4 text-center">
-            <div className="mx-auto size-20 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-              <Shield className="size-10 text-white" />
+            {/* Logo - Full image without text below */}
+            <div className="mx-auto flex items-center justify-center">
+              <img 
+                src="/KeyNest.png" 
+                alt="KeyNest Logo" 
+                className="w-32 h-32 object-contain"
+              />
             </div>
-            <CardTitle className="text-3xl font-bold text-white">
-              Aegis Vault
-            </CardTitle>
             <CardDescription className="text-slate-300">
               {isFirstTime 
                 ? 'Initialize your secure document vault with a strong password'
@@ -179,7 +179,7 @@ export function AuthenticationScreen() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="pl-10 pr-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                    className="pl-10 pr-10 bg-slate-700/40 border-slate-600 text-white placeholder:text-slate-400"
                     disabled={isLoading}
                   />
                   <button
@@ -254,7 +254,7 @@ export function AuthenticationScreen() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm your password"
-                      className="pl-10 pr-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                      className="pl-10 pr-10 bg-slate-700/40 border-slate-600 text-white placeholder:text-slate-400"
                       disabled={isLoading}
                     />
                     <button
@@ -285,22 +285,22 @@ export function AuthenticationScreen() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   'Processing...'
                 ) : isFirstTime ? (
-                  'Initialize Aegis Vault'
+                  'Initialize KeyNest'
                 ) : (
                   'Unlock Vault'
                 )}
               </Button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-slate-700">
+            <div className="mt-6 pt-6 border-t border-slate-700/50">
               <div className="flex items-center gap-2 text-xs text-slate-400">
-                <Shield className="size-4" />
+                <Key className="size-4" />
                 <span>AES-256-GCM | PBKDF2 | DoD 5220.22-M Shredding</span>
               </div>
             </div>
@@ -308,7 +308,7 @@ export function AuthenticationScreen() {
         </Card>
 
         {/* Right side - Features */}
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
+        <Card className="border-slate-600/20 bg-slate-700/45 backdrop-blur-sm shadow-2xl shadow-black/15">
           <CardHeader>
             <CardTitle className="text-white">Security Features</CardTitle>
             <CardDescription className="text-slate-300">
@@ -357,7 +357,7 @@ export function AuthenticationScreen() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-700">
+            <div className="pt-4 border-t border-slate-700/50">
               <h4 className="text-sm font-semibold text-white mb-2">How It Works</h4>
               <ol className="text-sm text-slate-400 space-y-2">
                 <li className="flex gap-2">
