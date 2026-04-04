@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyNest - Local File Vault</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob shape1"></div>
+        <div class="blob shape2"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <h1>KeyNest</h1>
+            </div>
+            <nav>
+                <a href="/" class="active">Vault</a>
+                <a href="/logs">Audit Logs</a>
+            </nav>
+        </header>
+
+        <main class="glass-panel">
+            <div class="tab-switcher">
+                <button class="tab-btn active" data-tab="encrypt">Encrypt File</button>
+                <button class="tab-btn" data-tab="decrypt">Decrypt File</button>
+            </div>
+
+            <div class="tab-content active" id="encrypt-tab">
+                <div class="hero-text">
+                    <h2>Secure your files with AES-256-GCM.</h2>
+                    <p>Select a file to encrypt. It will be secured and downloaded immediately.</p>
+                </div>
+                
+                <form id="encrypt-form" class="vault-form">
+                    <div class="file-drop-area cursor-pointer" id="encrypt-drop-area">
+                        <span class="file-msg">Drag & Drop or Click to Select File</span>
+                        <input type="file" id="encrypt-file" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="encrypt-password">Vault Password</label>
+                        <input type="password" id="encrypt-password" placeholder="Enter a strong password" required>
+                    </div>
+
+                    <div class="input-group toggle-group">
+                        <label class="switch">
+                            <input type="checkbox" id="encrypt-shred">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label">Secure Shred Original (DoD 5220.22-M)</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="encrypt-btn">Encrypt & Download</button>
+                </form>
+            </div>
+
+            <div class="tab-content" id="decrypt-tab">
+                <div class="hero-text">
+                    <h2>Unlock your vault.</h2>
+                    <p>Select a .knest file and provide the correct password to decrypt.</p>
+                </div>
+
+                <form id="decrypt-form" class="vault-form">
+                    <div class="file-drop-area cursor-pointer" id="decrypt-drop-area">
+                        <span class="file-msg">Drag & Drop .knest File</span>
+                        <input type="file" id="decrypt-file" accept=".knest" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="decrypt-password">Vault Password</label>
+                        <input type="password" id="decrypt-password" placeholder="Enter corresponding password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-secondary" id="decrypt-btn">Decrypt & Download</button>
+                </form>
+            </div>
+            
+            <div id="loader" class="loader hidden">
+                <div class="spinner"></div>
+                <p>Processing...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
