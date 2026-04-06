@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+uploads/
+keynest.db
+.env
+.ipynb_checkpoints/
+.vscode/
+.idea/
+*.knest
+node_modules/
+dist/
+.DS_Store

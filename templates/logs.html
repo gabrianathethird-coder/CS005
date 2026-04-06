@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - KeyNest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob shape1"></div>
+        <div class="blob shape2"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <img src="/KeyNest2.png" alt="KeyNest" class="logo-img">
+                <h1>KeyNest</h1>
+            </div>
+            <nav>
+                <a href="/">Vault</a>
+                <a href="/logs" class="active">Audit Logs</a>
+            </nav>
+        </header>
+
+        <div class="hero-text">
+            <h2>System Audit Logs</h2>
+            <p>Immutable record of all encryption, decryption, and secure shredding events.</p>
+        </div>
+
+        <main class="glass-panel audit-panel">
+            <div class="table-container">
+                <table class="glass-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Filename</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const logsBody = document.getElementById('logs-body');
+            try {
+                const response = await fetch('/api/logs');
+                const data = await response.json();
+                
+                if (data.logs.length === 0) {
+                    logsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No activity log found.</td></tr>';
+                    return;
+                }
+                
+                logsBody.innerHTML = '';
+                data.logs.forEach(log => {
+                    const tr = document.createElement('tr');
+                    
+                    // Format Timestamp
+                    const d = new Date(log.timestamp);
+                    const timeStr = d.toLocaleString();
+
+                    // Status pill
+                    const statusClass = log.status === 'SUCCESS' ? 'status-success' : 'status-failed';
+
+                    tr.innerHTML = `
+                        <td>#${log.id}</td>
+                        <td>${timeStr}</td>
+                        <td><strong>${log.action_type}</strong></td>
+                        <td>${log.filename}</td>
+                        <td><span class="status-pill ${statusClass}">${log.status}</span></td>
+                        <td>${log.details}</td>
+                    `;
+                    logsBody.appendChild(tr);
+                });
+            } catch (err) {
+                logsBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff5e5e;">Failed to load logs.</td></tr>';
+            }
+        });
+    </script>
+</body>
+</html>
