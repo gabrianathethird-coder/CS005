@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to KeyNest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob shape1"></div>
+        <div class="blob shape2"></div>
+    </div>
+
+    <div class="landing-container">
+        <header class="landing-header">
+            <div class="logo">
+                <img src="/KeyNest2.png" alt="KeyNest" class="logo-img">
+                <h1>KeyNest</h1>
+            </div>
+        </header>
+
+        <main class="landing-panel glass-panel">
+            <section class="landing-hero">
+                <h2>Secure your files locally, with no cloud required.</h2>
+                <p>KeyNest is an offline file vault that encrypts files using AES-256-GCM and stores audit logs locally with SQLite.</p>
+            </section>
+
+            <section class="landing-actions">
+                <a href="/vault" class="btn btn-primary">Enter Vault</a>
+                <a href="/logs" class="btn btn-secondary">View Audit Logs</a>
+            </section>
+
+            <section class="landing-features">
+                <div class="feature-card">
+                    <h3>AES-256-GCM</h3>
+                    <p>Authenticated encryption protects confidentiality and integrity of your files.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>PBKDF2 Key Derivation</h3>
+                    <p>Passwords are stretched with salt and high iteration count before use.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Secure Shredding</h3>
+                    <p>Optional file shredding overwrites originals before deletion.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

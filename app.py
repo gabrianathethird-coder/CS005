@@ -21,8 +21,13 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 init_db()
 
 @app.route('/')
+def landing():
+    # Render the landing page with a welcome experience.
+    return render_template('landing.html')
+
+@app.route('/vault')
 def index():
-    # Render the main landing page.
+    # Render the main encryption/decryption dashboard.
     return render_template('index.html')
 
 @app.route('/logs')
