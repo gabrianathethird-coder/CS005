@@ -55,9 +55,11 @@ export default function Encode() {
     try {
       // Step 1: Encrypt the message
       const encryptedData = await encryptText(secretMessage, password);
+      console.log('Encrypted data:', encryptedData);
       
       // Step 2: Embed into image
       const stegoBlob = await embedDataInImage(coverImage, encryptedData);
+      console.log('Stego image created, blob size:', stegoBlob.size);
       
       // Step 3: Calculate hash
       const imageBytes = await blobToUint8Array(stegoBlob);
@@ -257,7 +259,7 @@ export default function Encode() {
                       onClick={handleCopyHash}
                       variant="outline"
                       size="sm"
-                      className="border-amber-600 text-amber-200 hover:bg-amber-900/40 hover:border-amber-500 transition-all"
+                      className="border-amber-600 text-amber-200 hover:bg-amber-900/40 hover:border-amber-500 transition-all bg-stone-800/50"
                     >
                       {hashCopied ? (
                         <>
@@ -282,7 +284,7 @@ export default function Encode() {
             <Button
               onClick={handleReset}
               variant="outline"
-              className="w-full border-stone-600 text-white hover:bg-stone-700/50 hover:border-lime-500 transition-all"
+              className="w-full border-stone-600 text-white hover:bg-stone-700/50 hover:border-lime-500 transition-all bg-stone-800/50"
             >
               Encode Another Message
             </Button>

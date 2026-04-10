@@ -23,10 +23,25 @@ export async function embedDataInImage(
 
           canvas.width = img.width;
           canvas.height = img.height;
+          
+          // Fill canvas with white background to handle transparency
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
           ctx.drawImage(img, 0, 0);
 
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const pixels = imageData.data;
+
+          // Check if image has transparency
+          let hasAlpha = false;
+          for (let i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] < 255) {
+              hasAlpha = true;
+              break;
+            }
+          }
+          console.log('Embedding - Image has alpha channel:', hasAlpha);
 
           // Calculate maximum capacity (we can use 1 bit per color channel, excluding alpha)
           const maxBytes = Math.floor((pixels.length / 4) * 3 / 8);
@@ -43,6 +58,9 @@ export async function embedDataInImage(
           const allData = new Uint8Array(lengthBytes.length + data.length);
           allData.set(lengthBytes, 0);
           allData.set(data, lengthBytes.length);
+
+          console.log('Embedding data length:', data.length);
+          console.log('Total data to embed:', allData.length);
 
           // Embed data into LSB of RGB channels
           let bitIndex = 0;
@@ -103,11 +121,31 @@ export async function extractDataFromImage(imageFile: File): Promise<Uint8Array>
           }
 
           canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
+          canvas.height = img.height;          
+          // Fill canvas with white background to handle transparency
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
 
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const pixels = imageData.data;
+
+          // Check if image has transparency
+          let hasAlpha = false;
+          for (let i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] < 255) {
+              hasAlpha = true;
+              break;
+            }
+          }
+          console.log('Image has alpha channel:', hasAlpha);
+
+          // Check if image has enough pixels for steganography
+          const totalBits = (pixels.length / 4) * 3;
+          if (totalBits < 32) { // Need at least 32 bits for length header
+            reject(new Error('Image too small to contain steganographic data'));
+            return;
+          }
 
           // First, extract the data length (4 bytes)
           const lengthBytes = new Uint8Array(4);
@@ -120,6 +158,11 @@ export async function extractDataFromImage(imageFile: File): Promise<Uint8Array>
               const channelOffset = bitIndex % 3;
               const dataIndex = pixelIndex + channelOffset;
 
+              if (dataIndex >= pixels.length) {
+                reject(new Error('Image too small to contain steganographic data'));
+                return;
+              }
+
               const bitValue = pixels[dataIndex] & 1;
               byte |= bitValue << bit;
 
@@ -131,8 +174,15 @@ export async function extractDataFromImage(imageFile: File): Promise<Uint8Array>
           const dataLength = new DataView(lengthBytes.buffer).getUint32(0, false);
 
           // Validate data length
-          const maxBytes = Math.floor((pixels.length / 4) * 3 / 8) - 4;
+          const availableBits = totalBits - 32; // Subtract bits used for length
+          const maxBytes = Math.floor(availableBits / 8);
+
+          console.log('Extracted data length:', dataLength);
+          console.log('Length bytes:', lengthBytes);
+          console.log('Max bytes:', maxBytes);
+
           if (dataLength > maxBytes || dataLength <= 0) {
+            console.log('Data length validation failed');
             reject(new Error('Invalid or corrupted steganographic data'));
             return;
           }
@@ -145,6 +195,11 @@ export async function extractDataFromImage(imageFile: File): Promise<Uint8Array>
               const pixelIndex = Math.floor(bitIndex / 3) * 4;
               const channelOffset = bitIndex % 3;
               const dataIndex = pixelIndex + channelOffset;
+
+              if (dataIndex >= pixels.length) {
+                reject(new Error('Image data corrupted or truncated'));
+                return;
+              }
 
               const bitValue = pixels[dataIndex] & 1;
               byte |= bitValue << bit;

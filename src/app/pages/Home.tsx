@@ -160,7 +160,7 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-4">
             {[
               { icon: "🔐", title: "ChaCha20 Encryption", desc: "Military-grade stream cipher protecting your message content", color: "lime" },
-              { icon: "👁️", title: "LSB Steganography", desc: "Imperceptible embedding in image pixel data", color: "yellow" },
+              { icon: "👁️", title: "LSB Steganography", desc: "Imperceptible embedding in image pixel data", color: "amber" },
               { icon: "✓", title: "SHA-256 Verification", desc: "Cryptographic tamper detection for data integrity", color: "lime" }
             ].map((feature, index) => (
               <motion.div

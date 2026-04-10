@@ -27,12 +27,16 @@ export async function encryptText(plaintext: string, password: string): Promise<
   const nonce = generateNonce();
   const plaintextBytes = utf8ToBytes(plaintext);
   
+  console.log('Encrypting:', { plaintext, password, plaintextBytesLength: plaintextBytes.length });
+  
   const ciphertext = chacha20(key, nonce, plaintextBytes);
   
   // Concatenate nonce + ciphertext
   const result = new Uint8Array(nonce.length + ciphertext.length);
   result.set(nonce, 0);
   result.set(ciphertext, nonce.length);
+  
+  console.log('Encryption result length:', result.length);
   
   return result;
 }
@@ -50,9 +54,14 @@ export async function decryptText(encryptedData: Uint8Array, password: string): 
   const nonce = encryptedData.slice(0, 12);
   const ciphertext = encryptedData.slice(12);
   
+  console.log('Decrypting:', { encryptedDataLength: encryptedData.length, nonceLength: nonce.length, ciphertextLength: ciphertext.length, password });
+  
   const plaintextBytes = chacha20(key, nonce, ciphertext);
   
-  return bytesToUtf8(plaintextBytes);
+  const result = bytesToUtf8(plaintextBytes);
+  console.log('Decryption result:', result);
+  
+  return result;
 }
 
 /**

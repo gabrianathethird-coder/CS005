@@ -8,7 +8,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { decryptText, calculateHash, blobToUint8Array } from '../utils/crypto';
-import { extractDataFromImage } from '../utils/steganography';
+import { extractDataFromImage, validateImageFormat } from '../utils/steganography';
 
 export default function Decode() {
   const [stegoImage, setStegoImage] = useState<File | null>(null);
@@ -26,6 +26,11 @@ export default function Decode() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!validateImageFormat(file)) {
+      setError('Please upload a PNG or BMP image. Other formats may corrupt steganographic data.');
+      return;
+    }
 
     setStegoImage(file);
     setError('');
@@ -53,18 +58,28 @@ export default function Decode() {
 
       // Step 2: Extract data from image
       const extractedData = await extractDataFromImage(stegoImage);
+      console.log('Extracted data from image:', extractedData);
       
       // Step 3: Decrypt the data
       const plaintext = await decryptText(extractedData, password);
+      console.log('Final decrypted message:', plaintext);
       
       setDecryptedMessage(plaintext);
     } catch (err) {
-      if (err instanceof Error && err.message.includes('Invalid or corrupted')) {
-        setError('No steganographic data found in this image, or the data is corrupted.');
-      } else if (err instanceof Error && err.message.includes('UTF-8')) {
-        setError('Decryption failed. Please check your password and try again.');
+      if (err instanceof Error) {
+        if (err.message.includes('Invalid or corrupted')) {
+          setError('No steganographic data found in this image, or the data is corrupted. Make sure you\'re using an image that was encoded with this tool.');
+        } else if (err.message.includes('too small')) {
+          setError('The image is too small to contain steganographic data.');
+        } else if (err.message.includes('truncated')) {
+          setError('The steganographic data appears to be corrupted or truncated.');
+        } else if (err.message.includes('UTF-8')) {
+          setError('Decryption failed. Please check your password and try again.');
+        } else {
+          setError(err.message);
+        }
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to extract and decrypt message');
+        setError('Failed to extract and decrypt message');
       }
     } finally {
       setProcessing(false);
@@ -245,7 +260,7 @@ export default function Decode() {
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="w-full border-stone-600 text-white hover:bg-stone-700/50 hover:border-lime-500 transition-all"
+                className="w-full border-stone-600 text-white hover:bg-stone-700/50 hover:border-lime-500 transition-all bg-stone-800/50"
               >
                 Decode Another Image
               </Button>
