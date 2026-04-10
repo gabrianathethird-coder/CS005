@@ -2,9 +2,12 @@ import sqlite3
 import os
 from datetime import datetime
 
+# Path to the local audit log SQLite database.
 DB_PATH = 'keynest.db'
 
+
 def init_db():
+    """Initialize the audit database and create the logs table if needed."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
@@ -20,7 +23,9 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 def log_action(action_type: str, filename: str, status: str, details: str = ""):
+    """Record a new audit event with a timestamp and optional details."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
@@ -30,7 +35,9 @@ def log_action(action_type: str, filename: str, status: str, details: str = ""):
     conn.commit()
     conn.close()
 
+
 def get_logs():
+    """Return the most recent audit records as a list of dictionaries."""
     if not os.path.exists(DB_PATH):
         return []
     conn = sqlite3.connect(DB_PATH)

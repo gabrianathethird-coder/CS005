@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Tabs
+    // Tab switching logic for the Encrypt/Decrypt sections.
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -7,13 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             tabBtns.forEach(b => b.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
-            
+
             btn.classList.add('active');
             document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
         });
     });
 
-    // File Input UI Update
+    // Reusable file drag-and-drop + file input helper.
     const setupFileInput = (inputId, areaId) => {
         const input = document.getElementById(inputId);
         const area = document.getElementById(areaId);
@@ -43,8 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
             updateMsg(files[0].name);
         });
 
+        // Update the UI when a file is selected via the file picker.
         input.addEventListener('change', function(e) {
-            if(this.files && this.files[0]) {
+            if (this.files && this.files[0]) {
                 updateMsg(this.files[0].name);
             }
         });
@@ -54,10 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    if(document.getElementById('encrypt-file')) setupFileInput('encrypt-file', 'encrypt-drop-area');
-    if(document.getElementById('decrypt-file')) setupFileInput('decrypt-file', 'decrypt-drop-area');
+    // Initialize both file input areas if present.
+    if (document.getElementById('encrypt-file')) setupFileInput('encrypt-file', 'encrypt-drop-area');
+    if (document.getElementById('decrypt-file')) setupFileInput('decrypt-file', 'decrypt-drop-area');
 
-    // Forms
+    // Form handling variables.
     const encryptForm = document.getElementById('encrypt-form');
     const decryptForm = document.getElementById('decrypt-form');
     const loader = document.getElementById('loader');
@@ -73,14 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
-    if(encryptForm) {
+    if (encryptForm) {
         encryptForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const file = document.getElementById('encrypt-file').files[0];
             const pwd = document.getElementById('encrypt-password').value;
             const shred = document.getElementById('encrypt-shred').checked;
 
-            if(!file || !pwd) return;
+            if (!file || !pwd) return;
 
             const fd = new FormData();
             fd.append('file', file);
@@ -91,8 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const res = await fetch('/api/encrypt', { method: 'POST', body: fd });
-                if(res.ok) {
-                    // Trigger download
+                if (res.ok) {
+                    // Create a temporary download link for the returned encrypted blob.
                     const blob = await res.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -102,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     a.click();
                     a.remove();
                     window.URL.revokeObjectURL(url);
-                    
+
                     showToast('File encrypted successfully!');
                     encryptForm.reset();
                     document.querySelector('#encrypt-drop-area .file-msg').textContent = 'Drag & Drop or Click to Select File';
@@ -118,13 +120,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if(decryptForm) {
+    if (decryptForm) {
         decryptForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const file = document.getElementById('decrypt-file').files[0];
             const pwd = document.getElementById('decrypt-password').value;
 
-            if(!file || !pwd) return;
+            if (!file || !pwd) return;
 
             const fd = new FormData();
             fd.append('file', file);
@@ -134,9 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const res = await fetch('/api/decrypt', { method: 'POST', body: fd });
-                if(res.ok) {
+                if (res.ok) {
+                    // Parse the filename from response headers if available.
                     const contentDisp = res.headers.get('Content-Disposition');
-                    let filename = "decrypted_file";
+                    let filename = 'decrypted_file';
                     if (contentDisp && contentDisp.includes('filename=')) {
                         filename = contentDisp.split('filename=')[1].replace(/"/g, '');
                     }
